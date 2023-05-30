@@ -126,6 +126,7 @@ export function determineFrustumSet( tile, renderer ) {
 	const loadSiblings = renderer.loadSiblings;
 	const lruCache = renderer.lruCache;
 	const stopAtEmptyTiles = renderer.stopAtEmptyTiles;
+	console.log('trial hello')
 	resetFrameState( tile, frameCount );
 
 	// Early out if this tile is not within view.
