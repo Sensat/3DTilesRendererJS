@@ -18,6 +18,8 @@ import {
 } from 'three';
 import { raycastTraverse, raycastTraverseFirstHit } from './raycastTraverse.js';
 import { readMagicBytes } from '../utilities/readMagicBytes.js';
+import { HeapQueue } from '../utilities/HeapQueue.js';
+import Heap from 'heap';
 
 const INITIAL_FRUSTUM_CULLED = Symbol( 'INITIAL_FRUSTUM_CULLED' );
 const tempMat = new Matrix4();
@@ -70,7 +72,7 @@ export class TilesRenderer extends TilesRendererBase {
 		this.cameras = [];
 		this.cameraMap = new Map();
 		this.cameraInfo = [];
-		this.activeTiles = new Set();
+		this.activeTiles = new HeapQueue();
 		this.visibleTiles = new Set();
 		this._autoDisableRendererCulling = true;
 		this.optimizeRaycast = true;
@@ -328,6 +330,20 @@ export class TilesRenderer extends TilesRendererBase {
 
 	}
 
+	/* A copy of tiles that are loaded and can be rendered.*/
+	getActiveTiles() {
+
+		return this.activeTiles;
+
+	}
+
+	/* A copy of the tiles that are visible on the screen.*/
+	getVisibleTiles() {
+
+		return this.visibleTiles;
+
+	}
+
 	update() {
 
 		const group = this.group;
@@ -430,6 +446,35 @@ export class TilesRenderer extends TilesRendererBase {
 		}
 
 		super.update();
+		const items = this.lruCache.getItems();
+		this.activeTiles.clear();
+		for ( let i = 0; i < items.length; i ++ ) {
+
+			this.activeTiles.push( items[ i ], cameras[ 0 ] );
+
+		}
+		this.activeTiles.rebalance( cameras[ 0 ] );
+		this.group.children = [];
+
+
+		const nbestTiles = Heap.nlargest( this.activeTiles.toArray(), this.visibleTiles.size );
+		if ( nbestTiles.length > 0 ) {
+
+			const arrayVisTiles = Array.from( this.visibleTiles );
+			const visTilesObjects = arrayVisTiles.map( el => el.cached.scene );
+			const fovTiles = nbestTiles.map( el => el.cached.scene );
+			this.group.add( ...fovTiles );
+
+		}
+		this.group.traverse( child => {
+
+			child.visible = true;
+			child.updateMatrixWorld( true );
+
+		} );
+
+
+
 
 	}
 
@@ -851,16 +896,15 @@ export class TilesRenderer extends TilesRendererBase {
 
 		const scene = tile.cached.scene;
 		const visibleTiles = this.visibleTiles;
-		const group = this.group;
 		if ( visible ) {
 
-			group.add( scene );
+			// this.group.add( scene );
 			visibleTiles.add( tile );
 			scene.updateMatrixWorld( true );
 
 		} else {
 
-			group.remove( scene );
+			// this.group.remove( scene );
 			visibleTiles.delete( tile );
 
 		}
@@ -878,7 +922,7 @@ export class TilesRenderer extends TilesRendererBase {
 		const activeTiles = this.activeTiles;
 		if ( active ) {
 
-			activeTiles.add( tile );
+			activeTiles.push( tile, this.cameras[ 0 ] );
 
 		} else {
 

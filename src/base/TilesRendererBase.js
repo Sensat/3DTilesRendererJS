@@ -3,6 +3,7 @@ import { LRUCache } from '../utilities/LRUCache.js';
 import { PriorityQueue } from '../utilities/PriorityQueue.js';
 import { determineFrustumSet, toggleTiles, skipTraversal, markUsedSetLeaves, traverseSet } from './traverseFunctions.js';
 import { UNLOADED, LOADING, PARSING, LOADED, FAILED } from './constants.js';
+import { HeapQueue } from '../utilities/HeapQueue.js';
 
 /**
  * Function for provided to sort all tiles for prioritizing loading/unloading.
@@ -117,6 +118,8 @@ export class TilesRendererBase {
 		this.displayActiveTiles = false;
 		this.maxDepth = Infinity;
 		this.stopAtEmptyTiles = true;
+		this.activeTiles = new HeapQueue();
+
 
 	}
 

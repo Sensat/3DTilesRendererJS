@@ -107,6 +107,12 @@ class LRUCache {
 
 	}
 
+	getItems() {
+
+		return this.itemList;
+
+	}
+
 	// TODO: this should be renamed because it's not necessarily unloading all unused content
 	// Maybe call it "cleanup" or "unloadToMinSize"
 	unloadUnusedContent() {

@@ -1,35 +1,51 @@
-import { Box3, Camera, Vector2, Matrix4, WebGLRenderer, Object3D, LoadingManager, Sphere } from 'three';
-import { Tile } from '../base/Tile';
-import { Tileset } from '../base/Tileset';
-import { TilesRendererBase } from '../base/TilesRendererBase';
-import { TilesGroup } from './TilesGroup';
+import {
+	Box3,
+	Camera,
+	Vector2,
+	Matrix4,
+	WebGLRenderer,
+	Object3D,
+	LoadingManager,
+	Sphere,
+} from "three";
+import { Tile } from "../base/Tile";
+import { Tileset } from "../base/Tileset";
+import { TilesRendererBase } from "../base/TilesRendererBase";
+import { TilesGroup } from "./TilesGroup";
+import { HeapQueue } from "../utilities/HeapQueue.js";
 
 export class TilesRenderer extends TilesRendererBase {
+	autoDisableRendererCulling: Boolean;
+	optimizeRaycast: Boolean;
 
-	autoDisableRendererCulling : Boolean;
-	optimizeRaycast : Boolean;
+	manager: LoadingManager;
 
-	manager : LoadingManager;
+	group: TilesGroup;
 
-	group : TilesGroup;
+	getBounds(box: Box3): Boolean;
+	getOrientedBounds(box: Box3, matrix: Matrix4): Boolean;
+	getBoundingSphere(sphere: Sphere): Boolean;
 
-	getBounds( box : Box3 ) : Boolean;
-	getOrientedBounds( box : Box3, matrix : Matrix4 ) : Boolean;
-	getBoundingSphere( sphere: Sphere ) : Boolean;
+	hasCamera(camera: Camera): Boolean;
+	setCamera(camera: Camera): Boolean;
+	deleteCamera(camera: Camera): Boolean;
 
-	hasCamera( camera : Camera ) : Boolean;
-	setCamera( camera : Camera ) : Boolean;
-	deleteCamera( camera : Camera ) : Boolean;
+	setResolution(camera: Camera, x: Number, y: Number): Boolean;
+	setResolution(camera: Camera, resolution: Vector2): Boolean;
+	setResolutionFromRenderer(camera: Camera, renderer: WebGLRenderer): Boolean;
 
-	setResolution( camera : Camera, x : Number, y : Number ) : Boolean;
-	setResolution( camera : Camera, resolution : Vector2 ) : Boolean;
-	setResolutionFromRenderer( camera : Camera, renderer : WebGLRenderer ) : Boolean;
+	forEachLoadedModel(callback: (scene: Object3D, tile: Tile) => void): void;
 
-	forEachLoadedModel( callback : ( scene : Object3D, tile : Tile ) => void ) : void;
+	onLoadTileSet: ((tileSet: Tileset) => void) | null;
+	onLoadModel: ((scene: Object3D, tile: Tile) => void) | null;
+	onDisposeModel: ((scene: Object3D, tile: Tile) => void) | null;
+	onTileVisibilityChange:
+		| ((scene: Object3D, tile: Tile, visible: boolean) => void)
+		| null;
+	/* A copy of tiles that are loaded and can be rendered.*/
+	getActiveTiles: () => HeapQueue;
+	/* A copy of tiles that are visible on the screen.*/
+	getVisibleTiles: () => Set<Tile>;
 
-	onLoadTileSet : ( ( tileSet : Tileset ) => void ) | null;
-	onLoadModel : ( ( scene : Object3D, tile : Tile ) => void ) | null;
-	onDisposeModel : ( ( scene : Object3D, tile : Tile ) => void ) | null;
-	onTileVisibilityChange : ( ( scene : Object3D, tile : Tile, visible : boolean ) => void ) | null;
-
+	tileInView: (tile: Tile) => boolean;
 }
